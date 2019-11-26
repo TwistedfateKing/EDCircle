@@ -5,6 +5,7 @@
 #ifndef EDCIRCLE_SRC_EDGE_DRAWING_H_
 #define EDCIRCLE_SRC_EDGE_DRAWING_H_
 
+#include "opencv2/opencv.hpp"
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 
@@ -14,6 +15,9 @@ class EdgeDrawing {
   ~EdgeDrawing();
 
   void detect(cv::Mat img);
+
+ private:
+  cv::Mat smooth(cv::Mat img); // step 1
 
 };
 
