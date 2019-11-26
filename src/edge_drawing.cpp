@@ -11,6 +11,11 @@ EdgeDrawing::EdgeDrawing() {
 EdgeDrawing::~EdgeDrawing() {
 
 }
-void EdgeDrawing::detect() {
+void EdgeDrawing::detect(cv::Mat img) {
+  cv::imshow("img", img);
 
+  // step 1.
+  // step 2.
+  // step 3.
+  // step 4.
 }

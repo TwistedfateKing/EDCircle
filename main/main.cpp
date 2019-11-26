@@ -10,7 +10,7 @@ int main(void)
   cv::Mat rena_img = cv::imread("main/rena.png");
   cv::imshow("rena", rena_img);
 
-  edge_detector.detect();
+  edge_detector.detect(rena_img);
   cv::waitKey(0);
   return 1;
 }
