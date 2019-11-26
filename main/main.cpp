@@ -5,11 +5,12 @@
 
 int main(void)
 {
-  EdgeDrawing edge_detector();
+  EdgeDrawing edge_detector;
 
   cv::Mat rena_img = cv::imread("main/rena.png");
   cv::imshow("rena", rena_img);
-  cv::waitKey(0);
 
+  edge_detector.detect();
+  cv::waitKey(0);
   return 1;
 }
