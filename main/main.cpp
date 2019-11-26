@@ -1,7 +1,13 @@
 #include <stdio.h>
+#include "opencv2/core.hpp"
+#include "opencv2/highgui.hpp"
 
 int main(void)
 {
-    printf("hello world");
-    return -1;
+  
+  cv::Mat rena_img = cv::imread("main/rena.png");
+  cv::imshow("rena", rena_img);
+  cv::waitKey(0);
+
+  return 1;
 }
