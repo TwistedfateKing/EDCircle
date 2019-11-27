@@ -18,7 +18,12 @@ class EdgeDrawing {
 
  private:
   cv::Mat smooth(cv::Mat img); // step 1
-  void computeEdgeMap(cv::Mat img, cv::Mat mag, cv::Mat ori); // step 2
+  void computeEdgeMaps(cv::Mat img); // step 2
+
+ private:
+  cv::Mat G_; // gradient magnitude map
+  cv::Mat D_; // direction map
+  cv::Mat E_; // edge map
 
 };
 
