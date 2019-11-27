@@ -18,7 +18,6 @@ class EdgeDrawing {
   {
     VERTICAL = 255,
     HORIZONTAL = 125,
-    OTHER = 2,
   };
 
  public:
@@ -31,6 +30,9 @@ class EdgeDrawing {
   cv::Mat smooth(cv::Mat img); // step 1
   void computeEdgeMaps(cv::Mat img); // step 2
   void extractAnchors();
+  void connectEdges();
+
+  bool isAnchor(int x, int y);
 
  private:
   cv::Mat G_; // gradient magnitude map
