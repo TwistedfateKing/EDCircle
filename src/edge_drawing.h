@@ -10,6 +10,15 @@
 #include "opencv2/highgui.hpp"
 
 class EdgeDrawing {
+
+ public:
+  enum class EDGE_DIRECTION
+  {
+    VERTICAL = 0,
+    HORIZONTAL = 1,
+    OTHER = 2,
+  };
+
  public:
   EdgeDrawing();
   ~EdgeDrawing();
