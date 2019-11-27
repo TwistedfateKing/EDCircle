@@ -96,5 +96,42 @@ void EdgeDrawing::computeEdgeMaps(cv::Mat img)
 
 void EdgeDrawing::extractAnchors()
 {
+  anchors_.clear();
+
+  for(int y = 0; y < D_.rows; y += anchor_scan_interval_) {
+    for(int x = 0; x < D_.cols; x += anchor_scan_interval_) {
+      uchar direction = D_.at<uchar>(y, x);
+      if( direction == (uchar)EDGE_DIRECTION::HORIZONTAL ) {
+
+        if( ( y-1 < 0 ) && ((y+1) >= D_.rows) )
+          continue;
+        float gxy = G_.at<float>(y, x);
+        float gxy_up = G_.at<float>(y-1, x);
+        float gxy_dw = G_.at<float>(y+1, x);
+        if( ( (gxy - gxy_up) >= anchor_threshold_ ) && ( (gxy - gxy_dw ) >= anchor_threshold_ )) {
+          anchors_.push_back(cv::Point(x,y));
+        }
+      }
+
+      else {
+        if( ( x-1 < 0 ) && ((x+1) >= D_.cols) )
+          continue;
+
+        float gxy = G_.at<float>(y, x);
+        float gxy_lf = G_.at<float>(y, x-1);
+        float gxy_rt = G_.at<float>(y, x+1);
+        if( ( (gxy - gxy_lf) >= anchor_threshold_) && ( (gxy - gxy_rt) >= anchor_threshold_)) {
+          anchors_.push_back(cv::Point(x, y));
+        }
+      }
+
+    }
+  }
+
+  // Debug
+  cv::Mat anchor_Mat = cv::Mat::zeros(D_.size(), CV_8UC1);
+  for( int i = 0 ; i < anchors_.size(); i++)
+    anchor_Mat.at<uchar>(anchors_[i].y, anchors_[i].x) = 255;
+  cv::imshow( "anchor", anchor_Mat );
 
 }
