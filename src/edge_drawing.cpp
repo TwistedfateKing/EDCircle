@@ -24,6 +24,7 @@ void EdgeDrawing::detect(cv::Mat img)
   else {
     img.copyTo(gray);
   }
+  image_rect_ = cv::Rect(0,0, img.cols, img.rows);
   cv::imshow("gray", gray);
 
   // step 1. Suppression of noise by Gaussian filtering
@@ -70,13 +71,13 @@ void EdgeDrawing::computeEdgeMaps(cv::Mat img)
       }
     }
   }
-  
+
   // edge direction map
   D_ = cv::Mat::zeros(img.size(), CV_8UC1);
   for(int y = 0; y < img.rows; y++) {
     for(int x = 0; x < img.cols; x++) {
-      float gx_val = gx.at<float>(y, x);
-      float gy_val = gy.at<float>(y, x);
+      float gx_val = abs_gx.at<float>(y, x);
+      float gy_val = abs_gy.at<float>(y, x);
 
       // Vertical edge
       if( gx_val >= gy_val) {
@@ -120,11 +121,30 @@ void EdgeDrawing::extractAnchors()
 void EdgeDrawing::connectEdges() {
 
   E_ = cv::Mat::zeros(D_.size(), CV_8UC1);
+  cv::Mat E_color = cv::Mat::zeros(D_.size(), CV_8UC3);
+  for( int i = 0 ; i < anchors_.size(); i++) {
+    int x = anchors_[i].x;
+    int y = anchors_[i].y;
 
-//  for( int i = 0 ; i < anchors_.size(); i++) {
+    std::vector<cv::Point> edge_segment;
 
-//  }
+    edge_proceed(x, y, edge_segment);
 
+    edge_segments_.push_back( edge_segment );
+  }
+
+  // debug
+  for(int i =0 ; i < edge_segments_.size(); i++) {
+    cv::Vec3b ran_color = cv::Vec3b(rand()%255,rand()%255,rand()%255);
+    if (edge_segments_[i].size() > edge_segment_drawing_threshold_) {
+      for (int j = 0; j < edge_segments_[i].size(); j++) {
+        E_color.at<cv::Vec3b>(edge_segments_[i][j].y, edge_segments_[i][j].x) = ran_color;
+      }
+    }
+  }
+
+  cv::imshow( "E", E_ );
+  cv::imshow( "E_color", E_color );
 }
 
 bool EdgeDrawing::isAnchor(int x, int y) {
@@ -157,5 +177,418 @@ bool EdgeDrawing::isAnchor(int x, int y) {
     }
   }
 
+  return false;
+}
+
+void EdgeDrawing::edge_proceed_ori(int x, int y, std::vector<cv::Point> &edge_segment)
+{
+  uchar direction = D_.at<uchar>(y, x);
+  if( direction == (uchar)EDGE_DIRECTION::HORIZONTAL ) {
+    // left
+    goLeft(x, y, edge_segment);
+    // right
+    E_.at<uchar>(y, x) = 0;
+    goRight(x, y, edge_segment);
+  }
+  else {
+    // up
+    goUp(x, y, edge_segment);
+    // down
+    E_.at<uchar>(y, x) = 0;
+    goDown(x, y, edge_segment);
+  }
+}
+
+void EdgeDrawing::edge_proceed(int x, int y, std::vector<cv::Point> &edge_segment)
+{
+  uchar direction = D_.at<uchar>(y, x);
+
+  if( edge_process_stop_check(x, y) )
+    return;
+
+  E_.at<uchar>(y, x) = 255;
+  edge_segment.push_back( cv::Point(x,  y) );
+
+  if( direction == (uchar)EDGE_DIRECTION::HORIZONTAL ) {
+    // left
+    std::string left_dir = direction_to_left(x, y);
+    int left_x = x, left_y = y;
+    if ( left_dir == "up-left" ){
+      left_x = x - 1;
+      left_y = y - 1;
+    }
+    else if ( left_dir ==  "down-left" ){
+      left_x = x - 1;
+      left_y = y + 1;
+    }
+    else {
+      left_x = x - 1;
+    }
+    if(image_rect_.contains( cv::Point(left_x, left_y)))
+      goLeft(left_x, left_y, edge_segment);
+
+    // right
+    std::string right_dir = direction_to_right(x, y);
+    int right_x = x, right_y = y;
+    if ( right_dir == "up-right" ){
+      right_x = x + 1;
+      right_y = y - 1;
+    }
+    else if ( right_dir == "down-right" ){
+      right_x = x + 1;
+      right_y = y + 1;
+    }
+    else {
+      right_x = x + 1;
+    }
+    if(image_rect_.contains( cv::Point(right_x, right_y)))
+      goRight(right_x, right_y, edge_segment);
+
+  }
+  else {
+    // up
+    std::string up_dir = direction_to_up(x, y);
+    int up_x = x, up_y = y;
+    if ( up_dir == "up-left" ){
+      up_x = x - 1;
+      up_y = y - 1;
+    }
+    else if ( up_dir == "up-right"  ){
+      up_x = x + 1;
+      up_y = y - 1;
+    }
+    else {
+      up_y = y - 1;
+    }
+    if(image_rect_.contains( cv::Point(up_x, up_y)))
+      goUp(up_x, up_y, edge_segment);
+
+    // down
+    std::string down_dir = direction_to_down(x, y);
+    int down_x = x, down_y = y;
+    if ( down_dir == "down-left" ){
+      down_x = x - 1;
+      down_y = y + 1;
+    }
+    else if ( down_dir == "down-right" ){
+      down_x = x + 1;
+      down_y = y + 1;
+    }
+    else {
+      down_y = y + 1;
+    }
+    if(image_rect_.contains( cv::Point(down_x, down_y)))
+      goDown(down_x, down_y, edge_segment);
+
+  }
+}
+
+void EdgeDrawing::goLeft(int x, int y, std::vector<cv::Point> &edge_segment)
+{
+  if( edge_process_stop_check(x, y) )
+    return;
+
+  E_.at<uchar>(y, x) = 255;
+  edge_segment.push_back( cv::Point(x,  y) );
+
+  if (image_end_check(x, y))
+    return;
+
+  float g_1 = G_.at<float>(y - 1, x - 1);
+  float g_7 = G_.at<float>(y + 1, x - 1);
+
+  // find dir
+  std::string movement = direction_to_left(x, y);
+  if ( movement == "up-left" ){
+    x = x - 1;
+    y = y - 1;
+  }
+  else if ( movement == "down-left" ){
+    x = x - 1;
+    y = y + 1;
+  }
+  else {
+    x = x - 1;
+  }
+
+  uchar direction = D_.at<uchar>(y, x);
+  if( direction == (uchar)EDGE_DIRECTION::HORIZONTAL ) {
+    goLeft(x, y, edge_segment);
+  }
+  else {
+    if(movement == "up-left"){
+      goUp(x, y, edge_segment);
+    }
+    else if (movement == "down-left"){
+      goDown(x, y, edge_segment);
+    }
+    else {
+      if( g_1 > g_7) {
+        goUp(x, y, edge_segment);
+        anchors_.push_back(cv::Point(x, y+1));
+      }
+      else{
+        goDown(x, y, edge_segment);
+        anchors_.push_back(cv::Point(x, y-1));
+      }
+    }
+  }
+
+}
+
+void  EdgeDrawing::goRight(int x, int y, std::vector<cv::Point> &edge_segment)
+{
+  if( edge_process_stop_check(x, y) )
+    return;
+
+  E_.at<uchar>(y, x) = 255;
+  edge_segment.push_back( cv::Point(x,  y) );
+
+  if (image_end_check(x, y))
+    return;
+
+  float g_3 = G_.at<float>(y - 1, x + 1);
+  float g_9 = G_.at<float>(y + 1, x + 1);
+
+  // find dir
+  std::string movement = direction_to_right(x, y);
+  if ( movement == "up-right" ){
+    x = x + 1;
+    y = y - 1;
+  }
+  else if ( movement == "down-right" ){
+    x = x + 1;
+    y = y + 1;
+  }
+  else {
+    x = x + 1;
+  }
+
+  uchar direction = D_.at<uchar>(y, x);
+  if( direction == (uchar)EDGE_DIRECTION::HORIZONTAL ) {
+    goRight(x, y, edge_segment);
+  }
+  else {
+    if (movement == "up-right") {
+      goUp(x, y, edge_segment);
+    } else if (movement == "down-right") {
+      goDown(x, y, edge_segment);
+    } else {
+      if( g_3 > g_9) {
+        goUp(x, y, edge_segment);
+        anchors_.push_back(cv::Point(x, y+1));
+      }
+      else{
+        goDown(x, y, edge_segment);
+        anchors_.push_back(cv::Point(x, y-1));
+      }
+    }
+  }
+}
+
+void EdgeDrawing::goUp(int x, int y, std::vector<cv::Point> &edge_segment)
+{
+  if( edge_process_stop_check(x, y) )
+    return;
+
+  E_.at<uchar>(y, x) = 255;
+  edge_segment.push_back( cv::Point(x,  y) );
+
+  if (image_end_check(x, y))
+    return;
+
+  float g_1 = G_.at<float>(y-1, x-1);
+  float g_3 = G_.at<float>(y-1, x+1);
+
+  // find dir
+  std::string movement = direction_to_up(x, y);
+  if( movement == "end of image")
+    return;
+
+  if ( movement == "up-left" ){
+    x = x - 1;
+    y = y - 1;
+  }
+  else if ( movement == "up-right" ){
+    x = x + 1;
+    y = y - 1;
+  }
+  else {
+    y = y - 1;
+    movement = "up";
+  }
+
+  uchar direction = D_.at<uchar>(y, x);
+  if( direction == (uchar)EDGE_DIRECTION::HORIZONTAL ) {
+    if (movement == "up-left") {
+      goLeft(x, y, edge_segment);
+    } else if (movement == "up-right") {
+      goRight(x, y, edge_segment);
+    } else {
+      if( g_1 > g_3) {
+        goLeft(x, y, edge_segment);
+        anchors_.push_back(cv::Point(x+1, y));
+      }
+      else{
+        goRight(x, y, edge_segment);
+        anchors_.push_back(cv::Point(x-1, y));
+      }
+    }
+  }
+  else {
+    goUp(x, y, edge_segment);
+  }
+
+}
+
+void EdgeDrawing::goDown(int x, int y, std::vector<cv::Point> &edge_segment)
+{
+  if( edge_process_stop_check(x, y) )
+    return;
+
+  E_.at<uchar>(y, x) = 255;
+  edge_segment.push_back( cv::Point(x,  y) );
+
+  if (image_end_check(x, y))
+    return;
+
+  float g_7 = G_.at<float>(y+1, x-1);
+  float g_9 = G_.at<float>(y+1, x+1);
+
+  // find dir
+  std::string movement = direction_to_down(x, y);
+  if ( movement == "down-left" ){
+    x = x - 1;
+    y = y + 1;
+  }
+  else if ( movement == "down-right" ){
+    x = x + 1;
+    y = y + 1;
+  }
+  else {
+    y = y + 1;
+  }
+
+  uchar direction = D_.at<uchar>(y, x);
+  if( direction == (uchar)EDGE_DIRECTION::HORIZONTAL ) {
+    if (movement == "down-left") {
+      goLeft(x, y, edge_segment);
+    } else if (movement == "down-right") {
+      goRight(x, y, edge_segment);
+    } else {
+      if( g_7 > g_9) {
+        goLeft(x, y, edge_segment);
+        anchors_.push_back(cv::Point(x+1, y));
+      }
+      else{
+        goRight(x, y, edge_segment);
+        anchors_.push_back(cv::Point(x-1, y));
+      }
+    }
+  }
+  else {
+    goDown(x, y, edge_segment);
+  }
+}
+
+std::string EdgeDrawing::direction_to_left(int x, int y) {
+
+  std::string ret = "left";
+  if ( image_end_check(x,y) ) { // "end of img"
+    return ret;
+  }
+
+  float g_1 = G_.at<float>(y - 1, x - 1);
+  float g_4 = G_.at<float>(y + 0, x - 1);
+  float g_7 = G_.at<float>(y + 1, x - 1);
+
+  if ((g_1 > g_4) && (g_1 > g_7)) {
+    ret =  "up-left";
+  } else if ((g_7 > g_4) && (g_7 > g_1)) {
+    ret =  "down-left";
+  } else {
+    ret =  "left";
+  }
+  return ret;
+}
+
+
+std::string EdgeDrawing::direction_to_right(int x, int y)
+{
+  std::string ret = "right";
+  if ( image_end_check(x,y) ) {
+    return ret;
+  }
+
+  float g_3 = G_.at<float>(y - 1, x + 1);
+  float g_6 = G_.at<float>(y + 0, x + 1);
+  float g_9 = G_.at<float>(y + 1, x + 1);
+
+  // right
+  if ( (g_3 > g_6) && (g_3 > g_9) ){
+    ret = "up-right";
+  }
+  else if ( (g_9 > g_3) && (g_9 > g_6) ){
+    ret = "down-right";
+  }
+  else {
+    ret = "right";
+  }
+  return ret;
+}
+std::string EdgeDrawing::direction_to_up(int x, int y)
+{
+  std::string ret = "up";
+  if ( image_end_check(x,y) ) {
+    return ret;
+  }
+
+  float g_1 = G_.at<float>(y - 1, x - 1);
+  float g_2 = G_.at<float>(y - 1, x + 0);
+  float g_3 = G_.at<float>(y - 1, x + 1);
+
+  if ( (g_1 > g_2) && (g_1 > g_3) ){
+    ret = "up-left";
+  }
+  else if ( (g_3 > g_1) && (g_3 > g_2) ){
+    ret = "up-right";
+  }
+  else {
+    ret = "up";
+  }
+  return ret;
+}
+std::string EdgeDrawing::direction_to_down(int x, int y)
+{
+  std::string ret = "down";
+  if ( image_end_check(x,y) ) {
+    return ret;
+  }
+
+  float g_7 = G_.at<float>(y + 1, x - 1);
+  float g_8 = G_.at<float>(y + 1, x + 0);
+  float g_9 = G_.at<float>(y + 1, x + 1);
+
+  if ( (g_7 > g_8) && (g_7 > g_9) ){
+    ret = "down-left";
+  }
+  else if ( (g_9 > g_7) && (g_9 > g_8) ){
+    ret = "down-right";
+  }
+  else {
+    ret = "down";
+  }
+  return ret;
+}
+
+bool EdgeDrawing::edge_process_stop_check(int x, int y) {
+  if( E_.at<uchar>(y, x) != 0 || G_.at<float>(y, x) == 0 )
+    return true;
+  return false;
+}
+
+bool EdgeDrawing::image_end_check(int x, int y) {
+  if( x < 1 || y < 1 || x >= D_.cols - 1 || y >= D_.rows - 1 )
+    return true;
   return false;
 }

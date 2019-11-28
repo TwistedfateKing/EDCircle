@@ -7,8 +7,8 @@ int main(void)
 {
   EdgeDrawing edge_detector;
 
-  cv::Mat rena_img = cv::imread("main/rena.png");
-  cv::imshow("rena", rena_img);
+  cv::Mat rena_img = cv::imread("main/Lenna.png");
+  cv::imshow("renna", rena_img);
 
   edge_detector.detect(rena_img);
   cv::waitKey(0);
