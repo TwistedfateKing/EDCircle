@@ -4,6 +4,8 @@
 
 #include "edge_drawing.h"
 
+namespace ED {
+
 EdgeDrawing::EdgeDrawing()
 {
 
@@ -13,7 +15,7 @@ EdgeDrawing::~EdgeDrawing()
 {
 
 }
-void EdgeDrawing::detect(cv::Mat img)
+std::vector< std::vector<cv::Point> > EdgeDrawing::detect(cv::Mat img)
 {
 
   //convert Color
@@ -40,6 +42,7 @@ void EdgeDrawing::detect(cv::Mat img)
   // step 4. Connecting the anchors by smart routing.
   connectEdges();
 
+  return edge_segments_;
 }
 
 
@@ -591,4 +594,6 @@ bool EdgeDrawing::image_end_check(int x, int y) {
   if( x < 1 || y < 1 || x >= D_.cols - 1 || y >= D_.rows - 1 )
     return true;
   return false;
+}
+
 }

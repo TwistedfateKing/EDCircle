@@ -11,11 +11,22 @@
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 
+namespace ED {
+
+class EdgeSegment {
+ public:
+  std::vector<cv::Point> edges;
+};
+
+class EdgeSegments {
+ public:
+  std::vector<EdgeSegment> edge_segment;
+};
+
 class EdgeDrawing {
 
  public:
-  enum class EDGE_DIRECTION
-  {
+  enum class EDGE_DIRECTION {
     VERTICAL = 255,
     HORIZONTAL = 125,
   };
@@ -24,7 +35,7 @@ class EdgeDrawing {
   EdgeDrawing();
   ~EdgeDrawing();
 
-  void detect(cv::Mat img);
+  std::vector< std::vector<cv::Point> > detect(cv::Mat img);
 
  private:
   cv::Mat smooth(cv::Mat img); // step 1
@@ -53,8 +64,8 @@ class EdgeDrawing {
   cv::Mat D_; // direction map
   cv::Mat E_; // edge map
 
-  std::vector< cv::Point > anchors_;
-  std::vector< std::vector< cv::Point > > edge_segments_;
+  std::vector<cv::Point> anchors_;
+  std::vector<std::vector<cv::Point> > edge_segments_;
 
   cv::Rect image_rect_;
 
@@ -66,5 +77,7 @@ class EdgeDrawing {
   int edge_segment_drawing_threshold_ = 10;
 
 };
+
+}
 
 #endif //EDCIRCLE_SRC_EDGE_DRAWING_H_
