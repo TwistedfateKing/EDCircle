@@ -4,8 +4,6 @@
 
 #include "edge_drawing.h"
 
-namespace ED {
-
 EdgeDrawing::EdgeDrawing()
 {
 
@@ -50,20 +48,41 @@ cv::Mat EdgeDrawing::smooth(cv::Mat image)
 {
   cv::Mat smooth_img;
   cv::GaussianBlur(image, smooth_img, cv::Size(5,5), 1, 1);
+  cv::imshow("Debug_2_Smooth", smooth_img);
   return smooth_img;
 }
 
 void EdgeDrawing::computeEdgeMaps(cv::Mat img)
 {
   cv::Mat gx, gy;
-  cv::Sobel(img, gx, CV_32F, 1, 0);
-  cv::Sobel(img, gy, CV_32F, 0, 1);
+
+//  cv::Sobel(img, gx, CV_32F, 1, 0);
+//  cv::Sobel(img, gy, CV_32F, 0, 1);
+
+  float v[9] = {-1,0,1,-1,0,1,-1,0,1};
+  float h[9] = {-1,-1,-1,0,0,0,1,1,1};
+  cv::Mat kernel_h = cv::Mat( 3, 3, CV_32F, h);
+  cv::Mat kernel_v = cv::Mat( 3, 3, CV_32F, v);
+  cv::filter2D( img, gx, kernel_v.depth() , kernel_v );
+  cv::filter2D( img, gy, kernel_h.depth() , kernel_h );
 
   // mag G = |gx| + |gy|
   cv::Mat abs_gx, abs_gy;
   abs_gx = cv::abs(gx);
   abs_gy = cv::abs(gy);
+
+  G_ = cv::Mat::zeros(img.size(), CV_32FC1);
+
   G_ = abs_gx + abs_gy;
+//  std::cout << G_.type() << std::endl;
+//  for(int y = 0; y < img.rows; y++) {
+//    for(int x = 0; x < img.cols; x++) {
+//      float abs_gx_val = abs_gx.at<float>(y, x);
+//      float abs_gy_val = abs_gy.at<float>(y, x);
+//      float sqrt_g_val = std::sqrt(abs_gx_val*abs_gx_val + abs_gy_val+abs_gy_val );
+//      G_.at<float>(y, x) = sqrt_g_val;
+//    }
+//  }
 
   // mag thresholding
   for(int y = 0; y < img.rows; y++) {
@@ -93,10 +112,9 @@ void EdgeDrawing::computeEdgeMaps(cv::Mat img)
     }
   }
 
-  //  std::cout << G_.type() << std::endl;
   // Debug
-  cv::imshow( "Gradient mag", G_ );
-  cv::imshow( "Direction map", D_ );
+  cv::imshow( "Debug_3_Gradient_map", G_ );
+  cv::imshow( "Debug_4_Direction_map", D_ );
 }
 
 void EdgeDrawing::extractAnchors()
@@ -108,7 +126,7 @@ void EdgeDrawing::extractAnchors()
 
       // IsAnchor
       if( isAnchor(x,y) ) {
-        anchors_.push_back(cv::Point(x,y));
+        anchors_.push_back( std::make_pair(cv::Point(x,y), G_.at<float>(y, x) ) );
       }
     }
   }
@@ -116,8 +134,8 @@ void EdgeDrawing::extractAnchors()
   // Debug
   cv::Mat anchor_Mat = cv::Mat::zeros(D_.size(), CV_8UC1);
   for( int i = 0 ; i < anchors_.size(); i++)
-    anchor_Mat.at<uchar>(anchors_[i].y, anchors_[i].x) = 255;
-  cv::imshow( "anchor", anchor_Mat );
+    anchor_Mat.at<uchar>(anchors_[i].first) = 255;
+  cv::imshow( "Debug_5_anchor dot", anchor_Mat );
 
 }
 
@@ -126,14 +144,15 @@ void EdgeDrawing::connectEdges() {
   E_ = cv::Mat::zeros(D_.size(), CV_8UC1);
   cv::Mat E_color = cv::Mat::zeros(D_.size(), CV_8UC3);
   for( int i = 0 ; i < anchors_.size(); i++) {
-    int x = anchors_[i].x;
-    int y = anchors_[i].y;
+    int x = anchors_[i].first.x;
+    int y = anchors_[i].first.y;
 
     std::vector<cv::Point> edge_segment;
 
     edge_proceed(x, y, edge_segment);
 
-    edge_segments_.push_back( edge_segment );
+    if (edge_segment.size() > edge_segment_drawing_threshold_)
+      edge_segments_.push_back( edge_segment );
   }
 
   // debug
@@ -141,13 +160,12 @@ void EdgeDrawing::connectEdges() {
     cv::Vec3b ran_color = cv::Vec3b(rand()%255,rand()%255,rand()%255);
     if (edge_segments_[i].size() > edge_segment_drawing_threshold_) {
       for (int j = 0; j < edge_segments_[i].size(); j++) {
-        E_color.at<cv::Vec3b>(edge_segments_[i][j].y, edge_segments_[i][j].x) = ran_color;
+        E_color.at<cv::Vec3b>(edge_segments_[i][j]) = ran_color;
       }
     }
   }
-
-  cv::imshow( "E", E_ );
-  cv::imshow( "E_color", E_color );
+  // debug
+  cv::imshow( "Debug_6_Edge_segment", E_color );
 }
 
 bool EdgeDrawing::isAnchor(int x, int y) {
@@ -162,7 +180,7 @@ bool EdgeDrawing::isAnchor(int x, int y) {
     float gxy = G_.at<float>(y, x);
     float gxy_up = G_.at<float>(y-1, x);
     float gxy_dw = G_.at<float>(y+1, x);
-    if( ( (gxy - gxy_up) >= anchor_threshold_ ) && ( (gxy - gxy_dw ) >= anchor_threshold_ )) {
+    if( ( (gxy - gxy_up) > anchor_threshold_ ) && ( (gxy - gxy_dw ) > anchor_threshold_ )) {
       return true;
     }
   }
@@ -175,31 +193,12 @@ bool EdgeDrawing::isAnchor(int x, int y) {
     float gxy = G_.at<float>(y, x);
     float gxy_lf = G_.at<float>(y, x-1);
     float gxy_rt = G_.at<float>(y, x+1);
-    if( ( (gxy - gxy_lf) >= anchor_threshold_) && ( (gxy - gxy_rt) >= anchor_threshold_)) {
+    if( ( (gxy - gxy_lf) > anchor_threshold_) && ( (gxy - gxy_rt) > anchor_threshold_)) {
       return true;
     }
   }
 
   return false;
-}
-
-void EdgeDrawing::edge_proceed_ori(int x, int y, std::vector<cv::Point> &edge_segment)
-{
-  uchar direction = D_.at<uchar>(y, x);
-  if( direction == (uchar)EDGE_DIRECTION::HORIZONTAL ) {
-    // left
-    goLeft(x, y, edge_segment);
-    // right
-    E_.at<uchar>(y, x) = 0;
-    goRight(x, y, edge_segment);
-  }
-  else {
-    // up
-    goUp(x, y, edge_segment);
-    // down
-    E_.at<uchar>(y, x) = 0;
-    goDown(x, y, edge_segment);
-  }
 }
 
 void EdgeDrawing::edge_proceed(int x, int y, std::vector<cv::Point> &edge_segment)
@@ -229,6 +228,7 @@ void EdgeDrawing::edge_proceed(int x, int y, std::vector<cv::Point> &edge_segmen
     }
     if(image_rect_.contains( cv::Point(left_x, left_y)))
       goLeft(left_x, left_y, edge_segment);
+    std::reverse(edge_segment.begin(), edge_segment.end());
 
     // right
     std::string right_dir = direction_to_right(x, y);
@@ -265,6 +265,7 @@ void EdgeDrawing::edge_proceed(int x, int y, std::vector<cv::Point> &edge_segmen
     }
     if(image_rect_.contains( cv::Point(up_x, up_y)))
       goUp(up_x, up_y, edge_segment);
+    std::reverse(edge_segment.begin(), edge_segment.end());
 
     // down
     std::string down_dir = direction_to_down(x, y);
@@ -328,11 +329,9 @@ void EdgeDrawing::goLeft(int x, int y, std::vector<cv::Point> &edge_segment)
     else {
       if( g_1 > g_7) {
         goUp(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x, y+1));
       }
       else{
         goDown(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x, y-1));
       }
     }
   }
@@ -379,11 +378,9 @@ void  EdgeDrawing::goRight(int x, int y, std::vector<cv::Point> &edge_segment)
     } else {
       if( g_3 > g_9) {
         goUp(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x, y+1));
       }
       else{
         goDown(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x, y-1));
       }
     }
   }
@@ -430,11 +427,9 @@ void EdgeDrawing::goUp(int x, int y, std::vector<cv::Point> &edge_segment)
     } else {
       if( g_1 > g_3) {
         goLeft(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x+1, y));
       }
       else{
         goRight(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x-1, y));
       }
     }
   }
@@ -481,11 +476,9 @@ void EdgeDrawing::goDown(int x, int y, std::vector<cv::Point> &edge_segment)
     } else {
       if( g_7 > g_9) {
         goLeft(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x+1, y));
       }
       else{
         goRight(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x-1, y));
       }
     }
   }
@@ -594,6 +587,4 @@ bool EdgeDrawing::image_end_check(int x, int y) {
   if( x < 1 || y < 1 || x >= D_.cols - 1 || y >= D_.rows - 1 )
     return true;
   return false;
-}
-
 }

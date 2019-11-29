@@ -11,18 +11,6 @@
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 
-namespace ED {
-
-class EdgeSegment {
- public:
-  std::vector<cv::Point> edges;
-};
-
-class EdgeSegments {
- public:
-  std::vector<EdgeSegment> edge_segment;
-};
-
 class EdgeDrawing {
 
  public:
@@ -37,7 +25,7 @@ class EdgeDrawing {
 
   std::vector< std::vector<cv::Point> > detect(cv::Mat img);
 
- private:
+ protected:
   cv::Mat smooth(cv::Mat img); // step 1
   void computeEdgeMaps(cv::Mat img); // step 2
   void extractAnchors();
@@ -45,7 +33,6 @@ class EdgeDrawing {
 
   bool isAnchor(int x, int y);
 
-  void edge_proceed_ori(int x, int y, std::vector<cv::Point> &edge_segment);
   void edge_proceed(int x, int y, std::vector<cv::Point> &edge_segment);
   void goLeft(int x, int y, std::vector<cv::Point> &edge_segment);
   void goRight(int x, int y, std::vector<cv::Point> &edge_segment);
@@ -59,25 +46,23 @@ class EdgeDrawing {
   bool edge_process_stop_check(int x, int y);
   bool image_end_check(int x, int y);
 
- private:
+ protected:
   cv::Mat G_; // gradient magnitude map
   cv::Mat D_; // direction map
   cv::Mat E_; // edge map
 
-  std::vector<cv::Point> anchors_;
+  std::vector< std::pair<cv::Point, float> > anchors_;
   std::vector<std::vector<cv::Point> > edge_segments_;
 
   cv::Rect image_rect_;
 
  protected:
-  float mag_threshold_ = 36;
+  float mag_threshold_ = 27;
   float anchor_threshold_ = 8;
   float anchor_scan_interval_ = 2;
 
   int edge_segment_drawing_threshold_ = 10;
 
 };
-
-}
 
 #endif //EDCIRCLE_SRC_EDGE_DRAWING_H_

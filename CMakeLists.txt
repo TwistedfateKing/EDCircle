@@ -13,6 +13,8 @@ target_sources(${TARGET_ED}
         PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src/edge_drawing.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/edge_drawing.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/edge_drawing_parameter_free.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/edge_drawing_parameter_free.h"
         )
 
 add_subdirectory(main)
