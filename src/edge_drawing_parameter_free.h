@@ -10,6 +10,11 @@
 class EdgeDrawingParameterFree : public EdgeDrawing {
  public:
   std::vector< std::vector<cv::Point> > detect(cv::Mat img);
+
+ protected:
+  void ValidateEdgeSegments();
+  void ValidateSegment(std::vector<cv::Point> S);
+  std::vector< std::vector<cv::Point> > valid_edge_segments_;
 };
 
 #endif //EDCIRCLE_SRC_EDGE_DRAWING_PARAMETER_FREE_H_

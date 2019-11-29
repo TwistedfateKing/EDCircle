@@ -45,5 +45,18 @@ std::vector< std::vector<cv::Point> > EdgeDrawingParameterFree::detect(cv::Mat i
   // step 4. Connecting the anchors by smart routing.
   connectEdges();
 
-  return edge_segments_;
+  // step 4. Connecting the anchors by smart routing.
+  ValidateEdgeSegments();
+
+  return valid_edge_segments_;
+}
+
+void EdgeDrawingParameterFree::ValidateEdgeSegments() {
+  valid_edge_segments_ = edge_segments_;
+
+}
+
+void EdgeDrawingParameterFree::ValidateSegment(std::vector<cv::Point> S)
+{
+
 }
