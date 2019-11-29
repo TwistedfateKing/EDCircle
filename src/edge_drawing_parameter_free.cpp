@@ -14,10 +14,10 @@ struct sort_gradient
 
 std::vector< std::vector<cv::Point> > EdgeDrawingParameterFree::detect(cv::Mat img) {
 
-  mag_threshold_ = 8.32;
+  mag_threshold_ = 8.48;
   anchor_threshold_ = 0;
-  anchor_scan_interval_ = 2;
-
+  anchor_scan_interval_ = 1;
+  edge_segment_drawing_threshold_ = 5;
   //convert Color
   cv::Mat gray;
   if( img.channels() == 3 ) {

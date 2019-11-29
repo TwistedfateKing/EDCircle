@@ -149,7 +149,7 @@ void EdgeDrawing::connectEdges() {
 
     edge_proceed(x, y, edge_segment);
 
-    if (edge_segment.size() > 0)
+    if (edge_segment.size() > edge_segment_drawing_threshold_)
       edge_segments_.push_back( edge_segment );
   }
 
