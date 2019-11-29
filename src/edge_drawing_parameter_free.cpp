@@ -3,3 +3,7 @@
 //
 
 #include "edge_drawing_parameter_free.h"
+
+int EdgeSegmentParameterFree::set(int k) {
+  return 0;
+}

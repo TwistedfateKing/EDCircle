@@ -11,18 +11,6 @@
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 
-namespace ED {
-
-class EdgeSegment {
- public:
-  std::vector<cv::Point> edges;
-};
-
-class EdgeSegments {
- public:
-  std::vector<EdgeSegment> edge_segment;
-};
-
 class EdgeDrawing {
 
  public:
@@ -77,7 +65,5 @@ class EdgeDrawing {
   int edge_segment_drawing_threshold_ = 10;
 
 };
-
-}
 
 #endif //EDCIRCLE_SRC_EDGE_DRAWING_H_

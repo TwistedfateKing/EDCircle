@@ -4,8 +4,6 @@
 
 #include "edge_drawing.h"
 
-namespace ED {
-
 EdgeDrawing::EdgeDrawing()
 {
 
@@ -594,6 +592,4 @@ bool EdgeDrawing::image_end_check(int x, int y) {
   if( x < 1 || y < 1 || x >= D_.cols - 1 || y >= D_.rows - 1 )
     return true;
   return false;
-}
-
 }
