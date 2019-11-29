@@ -201,25 +201,6 @@ bool EdgeDrawing::isAnchor(int x, int y) {
   return false;
 }
 
-void EdgeDrawing::edge_proceed_ori(int x, int y, std::vector<cv::Point> &edge_segment)
-{
-  uchar direction = D_.at<uchar>(y, x);
-  if( direction == (uchar)EDGE_DIRECTION::HORIZONTAL ) {
-    // left
-    goLeft(x, y, edge_segment);
-    // right
-    E_.at<uchar>(y, x) = 0;
-    goRight(x, y, edge_segment);
-  }
-  else {
-    // up
-    goUp(x, y, edge_segment);
-    // down
-    E_.at<uchar>(y, x) = 0;
-    goDown(x, y, edge_segment);
-  }
-}
-
 void EdgeDrawing::edge_proceed(int x, int y, std::vector<cv::Point> &edge_segment)
 {
   uchar direction = D_.at<uchar>(y, x);

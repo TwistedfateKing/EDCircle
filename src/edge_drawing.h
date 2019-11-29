@@ -33,7 +33,6 @@ class EdgeDrawing {
 
   bool isAnchor(int x, int y);
 
-  void edge_proceed_ori(int x, int y, std::vector<cv::Point> &edge_segment);
   void edge_proceed(int x, int y, std::vector<cv::Point> &edge_segment);
   void goLeft(int x, int y, std::vector<cv::Point> &edge_segment);
   void goRight(int x, int y, std::vector<cv::Point> &edge_segment);
@@ -58,7 +57,7 @@ class EdgeDrawing {
   cv::Rect image_rect_;
 
  protected:
-  float mag_threshold_ = 36;
+  float mag_threshold_ = 27;
   float anchor_threshold_ = 8;
   float anchor_scan_interval_ = 2;
 
