@@ -54,14 +54,32 @@ cv::Mat EdgeDrawing::smooth(cv::Mat image)
 void EdgeDrawing::computeEdgeMaps(cv::Mat img)
 {
   cv::Mat gx, gy;
-  cv::Sobel(img, gx, CV_32F, 1, 0);
-  cv::Sobel(img, gy, CV_32F, 0, 1);
+
+//  cv::Sobel(img, gx, CV_32F, 1, 0);
+//  cv::Sobel(img, gy, CV_32F, 0, 1);
+  float h[9] = {-1,-1,-1,0,0,0,1,1,1};
+  float w[9] = {-1,0,1,-1,0,1,-1,0,1};
+  cv::Mat kernel_h = cv::Mat( 3, 3, CV_32F, h);
+  cv::Mat kernel_w = cv::Mat( 3, 3, CV_32F, w);
+  cv::filter2D( img, gx, kernel_h.depth() , kernel_w );
+  cv::filter2D( img, gy, kernel_w.depth() , kernel_h );
 
   // mag G = |gx| + |gy|
   cv::Mat abs_gx, abs_gy;
   abs_gx = cv::abs(gx);
   abs_gy = cv::abs(gy);
-  G_ = abs_gx + abs_gy;
+
+  G_ = cv::Mat::zeros(img.size(), CV_32FC1);
+
+//  G_ = abs_gx + abs_gy;
+  for(int y = 0; y < img.rows; y++) {
+    for(int x = 0; x < img.cols; x++) {
+      float abs_gx_val = abs_gx.at<float>(y, x);
+      float abs_gy_val = abs_gy.at<float>(y, x);
+      float sqrt_g_val = std::sqrt(abs_gx_val*abs_gx_val + abs_gy_val+abs_gy_val );
+      G_.at<float>(y, x) = sqrt_g_val;
+    }
+  }
 
   // mag thresholding
   for(int y = 0; y < img.rows; y++) {
