@@ -149,7 +149,8 @@ void EdgeDrawing::connectEdges() {
 
     edge_proceed(x, y, edge_segment);
 
-    edge_segments_.push_back( edge_segment );
+    if (edge_segment.size() > 0)
+      edge_segments_.push_back( edge_segment );
   }
 
   // debug
@@ -245,6 +246,7 @@ void EdgeDrawing::edge_proceed(int x, int y, std::vector<cv::Point> &edge_segmen
     }
     if(image_rect_.contains( cv::Point(left_x, left_y)))
       goLeft(left_x, left_y, edge_segment);
+    std::reverse(edge_segment.begin(), edge_segment.end());
 
     // right
     std::string right_dir = direction_to_right(x, y);
@@ -281,6 +283,7 @@ void EdgeDrawing::edge_proceed(int x, int y, std::vector<cv::Point> &edge_segmen
     }
     if(image_rect_.contains( cv::Point(up_x, up_y)))
       goUp(up_x, up_y, edge_segment);
+    std::reverse(edge_segment.begin(), edge_segment.end());
 
     // down
     std::string down_dir = direction_to_down(x, y);
