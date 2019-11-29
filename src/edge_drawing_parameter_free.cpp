@@ -63,10 +63,10 @@ void EdgeDrawingParameterFree::ValidateEdgeSegments() {
 
   // validation
   for( int i = 0; i < edge_segments_.size(); i++) {
-    if( ValidateSegment( edge_segments_[i] ) ) {
-      valid_edge_segments_.push_back(edge_segments_[i]);
-    }
-//    ValidateSegment( edge_segments_[i] );
+//    if( ValidateSegment( edge_segments_[i] ) ) {
+//      valid_edge_segments_.push_back(edge_segments_[i]);
+//    }
+    ValidateSegment( edge_segments_[i] );
   }
 
   // debug
@@ -101,7 +101,7 @@ bool EdgeDrawingParameterFree::ValidateSegment(std::vector<cv::Point> S )
   float NFA = Np_ * pow(hu, l);
 
   if ( NFA < 1) {
-//    valid_edge_segments_.push_back(S);
+    valid_edge_segments_.push_back(S);
     return true;
   }
 
