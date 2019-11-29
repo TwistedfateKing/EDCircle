@@ -25,7 +25,7 @@ class EdgeDrawing {
 
   std::vector< std::vector<cv::Point> > detect(cv::Mat img);
 
- private:
+ protected:
   cv::Mat smooth(cv::Mat img); // step 1
   void computeEdgeMaps(cv::Mat img); // step 2
   void extractAnchors();
@@ -47,7 +47,7 @@ class EdgeDrawing {
   bool edge_process_stop_check(int x, int y);
   bool image_end_check(int x, int y);
 
- private:
+ protected:
   cv::Mat G_; // gradient magnitude map
   cv::Mat D_; // direction map
   cv::Mat E_; // edge map

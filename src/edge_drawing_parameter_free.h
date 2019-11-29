@@ -7,10 +7,9 @@
 
 #include "edge_drawing.h"
 
-class EdgeSegmentParameterFree : public EdgeDrawing {
+class EdgeDrawingParameterFree : public EdgeDrawing {
  public:
-  int set(int k);
-  int k_;
+  std::vector< std::vector<cv::Point> > detect(cv::Mat img);
 };
 
 #endif //EDCIRCLE_SRC_EDGE_DRAWING_PARAMETER_FREE_H_
