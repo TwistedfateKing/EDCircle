@@ -160,7 +160,7 @@ bool EdgeDrawing::isAnchor(int x, int y) {
     float gxy = G_.at<float>(y, x);
     float gxy_up = G_.at<float>(y-1, x);
     float gxy_dw = G_.at<float>(y+1, x);
-    if( ( (gxy - gxy_up) >= anchor_threshold_ ) && ( (gxy - gxy_dw ) >= anchor_threshold_ )) {
+    if( ( (gxy - gxy_up) > anchor_threshold_ ) && ( (gxy - gxy_dw ) > anchor_threshold_ )) {
       return true;
     }
   }
@@ -173,7 +173,7 @@ bool EdgeDrawing::isAnchor(int x, int y) {
     float gxy = G_.at<float>(y, x);
     float gxy_lf = G_.at<float>(y, x-1);
     float gxy_rt = G_.at<float>(y, x+1);
-    if( ( (gxy - gxy_lf) >= anchor_threshold_) && ( (gxy - gxy_rt) >= anchor_threshold_)) {
+    if( ( (gxy - gxy_lf) > anchor_threshold_) && ( (gxy - gxy_rt) > anchor_threshold_)) {
       return true;
     }
   }

@@ -4,20 +4,19 @@
 
 #include "edge_drawing_parameter_free.h"
 
-//EdgeSegmentParameterFree::EdgeSegmentParameterFree() {
-//  mag_threshold_ = 8.32;
-//  anchor_threshold_ = 0;
-//  anchor_scan_interval_ = 1;
-//}
-//EdgeSegmentParameterFree::~EdgeSegmentParameterFree() {
-//
-//}
+struct sort_gradient
+{
+  bool operator()(const std::pair<cv::Point, float> &left, const std::pair<cv::Point, float> &right)
+  {
+    return left.second > right.second;
+  }
+};
 
 std::vector< std::vector<cv::Point> > EdgeDrawingParameterFree::detect(cv::Mat img) {
 
   mag_threshold_ = 8.32;
   anchor_threshold_ = 0;
-  anchor_scan_interval_ = 1;
+  anchor_scan_interval_ = 2;
 
   //convert Color
   cv::Mat gray;
@@ -40,8 +39,8 @@ std::vector< std::vector<cv::Point> > EdgeDrawingParameterFree::detect(cv::Mat i
   // step 3. Extraction of the anchors.
   extractAnchors();
 
-  // sort anchor with anchor gradient
-
+  // sort anchor with anchor gradient.
+  std::sort(anchors_.begin(), anchors_.end(), sort_gradient());
 
   // step 4. Connecting the anchors by smart routing.
   connectEdges();
