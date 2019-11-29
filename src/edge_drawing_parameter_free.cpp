@@ -40,6 +40,9 @@ std::vector< std::vector<cv::Point> > EdgeDrawingParameterFree::detect(cv::Mat i
   // step 3. Extraction of the anchors.
   extractAnchors();
 
+  // sort anchor with anchor gradient
+
+
   // step 4. Connecting the anchors by smart routing.
   connectEdges();
 

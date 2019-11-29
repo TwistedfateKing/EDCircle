@@ -106,7 +106,7 @@ void EdgeDrawing::extractAnchors()
 
       // IsAnchor
       if( isAnchor(x,y) ) {
-        anchors_.push_back(cv::Point(x,y));
+        anchors_.push_back( std::make_pair(cv::Point(x,y), G_.at<float>(y, x) ) );
       }
     }
   }
@@ -114,7 +114,7 @@ void EdgeDrawing::extractAnchors()
   // Debug
   cv::Mat anchor_Mat = cv::Mat::zeros(D_.size(), CV_8UC1);
   for( int i = 0 ; i < anchors_.size(); i++)
-    anchor_Mat.at<uchar>(anchors_[i].y, anchors_[i].x) = 255;
+    anchor_Mat.at<uchar>(anchors_[i].first) = 255;
   cv::imshow( "anchor", anchor_Mat );
 
 }
@@ -124,8 +124,8 @@ void EdgeDrawing::connectEdges() {
   E_ = cv::Mat::zeros(D_.size(), CV_8UC1);
   cv::Mat E_color = cv::Mat::zeros(D_.size(), CV_8UC3);
   for( int i = 0 ; i < anchors_.size(); i++) {
-    int x = anchors_[i].x;
-    int y = anchors_[i].y;
+    int x = anchors_[i].first.x;
+    int y = anchors_[i].first.y;
 
     std::vector<cv::Point> edge_segment;
 
@@ -326,11 +326,9 @@ void EdgeDrawing::goLeft(int x, int y, std::vector<cv::Point> &edge_segment)
     else {
       if( g_1 > g_7) {
         goUp(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x, y+1));
       }
       else{
         goDown(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x, y-1));
       }
     }
   }
@@ -377,11 +375,9 @@ void  EdgeDrawing::goRight(int x, int y, std::vector<cv::Point> &edge_segment)
     } else {
       if( g_3 > g_9) {
         goUp(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x, y+1));
       }
       else{
         goDown(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x, y-1));
       }
     }
   }
@@ -428,11 +424,9 @@ void EdgeDrawing::goUp(int x, int y, std::vector<cv::Point> &edge_segment)
     } else {
       if( g_1 > g_3) {
         goLeft(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x+1, y));
       }
       else{
         goRight(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x-1, y));
       }
     }
   }
@@ -479,11 +473,9 @@ void EdgeDrawing::goDown(int x, int y, std::vector<cv::Point> &edge_segment)
     } else {
       if( g_7 > g_9) {
         goLeft(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x+1, y));
       }
       else{
         goRight(x, y, edge_segment);
-        anchors_.push_back(cv::Point(x-1, y));
       }
     }
   }

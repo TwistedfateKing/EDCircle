@@ -52,7 +52,7 @@ class EdgeDrawing {
   cv::Mat D_; // direction map
   cv::Mat E_; // edge map
 
-  std::vector<cv::Point> anchors_;
+  std::vector< std::pair<cv::Point, float> > anchors_;
   std::vector<std::vector<cv::Point> > edge_segments_;
 
   cv::Rect image_rect_;
