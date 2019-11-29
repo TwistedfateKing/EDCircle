@@ -158,7 +158,7 @@ void EdgeDrawing::connectEdges() {
     cv::Vec3b ran_color = cv::Vec3b(rand()%255,rand()%255,rand()%255);
     if (edge_segments_[i].size() > edge_segment_drawing_threshold_) {
       for (int j = 0; j < edge_segments_[i].size(); j++) {
-        E_color.at<cv::Vec3b>(edge_segments_[i][j].y, edge_segments_[i][j].x) = ran_color;
+        E_color.at<cv::Vec3b>(edge_segments_[i][j]) = ran_color;
       }
     }
   }
