@@ -13,7 +13,13 @@ class EdgeDrawingParameterFree : public EdgeDrawing {
 
  protected:
   void ValidateEdgeSegments();
-  void ValidateSegment(std::vector<cv::Point> S);
+  bool ValidateSegment(std::vector<cv::Point> S);
+
+  void make_H();
+
+ protected:
+  int Np_ = 0;
+  cv::Mat H_;
   std::vector< std::vector<cv::Point> > valid_edge_segments_;
 };
 

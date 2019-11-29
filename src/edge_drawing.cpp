@@ -48,6 +48,7 @@ cv::Mat EdgeDrawing::smooth(cv::Mat image)
 {
   cv::Mat smooth_img;
   cv::GaussianBlur(image, smooth_img, cv::Size(5,5), 1, 1);
+  cv::imshow("Debug_2_Smooth", smooth_img);
   return smooth_img;
 }
 
@@ -57,12 +58,13 @@ void EdgeDrawing::computeEdgeMaps(cv::Mat img)
 
 //  cv::Sobel(img, gx, CV_32F, 1, 0);
 //  cv::Sobel(img, gy, CV_32F, 0, 1);
+
+  float v[9] = {-1,0,1,-1,0,1,-1,0,1};
   float h[9] = {-1,-1,-1,0,0,0,1,1,1};
-  float w[9] = {-1,0,1,-1,0,1,-1,0,1};
   cv::Mat kernel_h = cv::Mat( 3, 3, CV_32F, h);
-  cv::Mat kernel_w = cv::Mat( 3, 3, CV_32F, w);
-  cv::filter2D( img, gx, kernel_h.depth() , kernel_w );
-  cv::filter2D( img, gy, kernel_w.depth() , kernel_h );
+  cv::Mat kernel_v = cv::Mat( 3, 3, CV_32F, v);
+  cv::filter2D( img, gx, kernel_v.depth() , kernel_v );
+  cv::filter2D( img, gy, kernel_h.depth() , kernel_h );
 
   // mag G = |gx| + |gy|
   cv::Mat abs_gx, abs_gy;
@@ -71,15 +73,16 @@ void EdgeDrawing::computeEdgeMaps(cv::Mat img)
 
   G_ = cv::Mat::zeros(img.size(), CV_32FC1);
 
-//  G_ = abs_gx + abs_gy;
-  for(int y = 0; y < img.rows; y++) {
-    for(int x = 0; x < img.cols; x++) {
-      float abs_gx_val = abs_gx.at<float>(y, x);
-      float abs_gy_val = abs_gy.at<float>(y, x);
-      float sqrt_g_val = std::sqrt(abs_gx_val*abs_gx_val + abs_gy_val+abs_gy_val );
-      G_.at<float>(y, x) = sqrt_g_val;
-    }
-  }
+  G_ = abs_gx + abs_gy;
+//  std::cout << G_.type() << std::endl;
+//  for(int y = 0; y < img.rows; y++) {
+//    for(int x = 0; x < img.cols; x++) {
+//      float abs_gx_val = abs_gx.at<float>(y, x);
+//      float abs_gy_val = abs_gy.at<float>(y, x);
+//      float sqrt_g_val = std::sqrt(abs_gx_val*abs_gx_val + abs_gy_val+abs_gy_val );
+//      G_.at<float>(y, x) = sqrt_g_val;
+//    }
+//  }
 
   // mag thresholding
   for(int y = 0; y < img.rows; y++) {
@@ -109,10 +112,9 @@ void EdgeDrawing::computeEdgeMaps(cv::Mat img)
     }
   }
 
-  //  std::cout << G_.type() << std::endl;
   // Debug
-  cv::imshow( "Gradient mag", G_ );
-  cv::imshow( "Direction map", D_ );
+  cv::imshow( "Debug_3_Gradient_map", G_ );
+  cv::imshow( "Debug_4_Direction_map", D_ );
 }
 
 void EdgeDrawing::extractAnchors()
@@ -133,7 +135,7 @@ void EdgeDrawing::extractAnchors()
   cv::Mat anchor_Mat = cv::Mat::zeros(D_.size(), CV_8UC1);
   for( int i = 0 ; i < anchors_.size(); i++)
     anchor_Mat.at<uchar>(anchors_[i].first) = 255;
-  cv::imshow( "anchor", anchor_Mat );
+  cv::imshow( "Debug_5_anchor dot", anchor_Mat );
 
 }
 
@@ -162,9 +164,8 @@ void EdgeDrawing::connectEdges() {
       }
     }
   }
-
-  cv::imshow( "E", E_ );
-  cv::imshow( "E_color", E_color );
+  // debug
+  cv::imshow( "Debug_6_Edge_segment", E_color );
 }
 
 bool EdgeDrawing::isAnchor(int x, int y) {
