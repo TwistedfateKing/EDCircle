@@ -10,3 +10,6 @@ EDCircle::EDCircle() {
 EDCircle::~EDCircle() {
 
 }
+void EDCircle::detect(std::vector<std::vector<cv::Point>> edge_segment) {
+  std::cout << "EDCircle::detect()" << std::endl;
+}

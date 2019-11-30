@@ -16,6 +16,7 @@ int main(void)
   std::vector< std::vector<cv::Point> > edge_segment = edpf.detect(rena_img);
 
   EDCircle circle_detector;
+  circle_detector.detect(edge_segment);
 
   cv::Mat ret_img_segment = cv::Mat::zeros(rena_img.size(), CV_8UC3);
   cv::Mat ret_img_edge = cv::Mat::zeros(rena_img.size(), CV_8UC3);
