@@ -3,6 +3,7 @@
 #include "opencv2/highgui.hpp"
 #include "src/edge_drawing.h"
 #include "src/edge_drawing_parameter_free.h"
+#include "src/ed_circle.h"
 
 int main(void)
 {
@@ -13,6 +14,8 @@ int main(void)
 //  std::vector< std::vector<cv::Point> > edge_segment = ed.detect(rena_img);
   EdgeDrawingParameterFree edpf;
   std::vector< std::vector<cv::Point> > edge_segment = edpf.detect(rena_img);
+
+  EDCircle circle_detector;
 
   cv::Mat ret_img_segment = cv::Mat::zeros(rena_img.size(), CV_8UC3);
   cv::Mat ret_img_edge = cv::Mat::zeros(rena_img.size(), CV_8UC3);
