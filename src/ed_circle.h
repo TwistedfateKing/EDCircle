@@ -16,6 +16,10 @@ class EDCircle {
 
   void detect( std::vector<std::vector<cv::Point> > edge_segment);
 
+ protected:
+  std::vector<std::vector<cv::Point>> find_least_squares_circle_fit(std::vector<std::vector<cv::Point> > edge_segments);
+  std::vector<std::vector<cv::Point>> find_least_squares_ellipse_fit(std::vector<std::vector<cv::Point> > edge_segments);
+  bool least_squares_circle_fit(std::vector<cv::Point> edge_segment, cv::Point2f &circle_center, float &radius);
 };
 
 #endif //EDCIRCLE_SRC_ED_CIRCLE_H_
