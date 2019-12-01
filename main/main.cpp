@@ -7,7 +7,7 @@
 
 int main(void)
 {
-  cv::Mat rena_img = cv::imread("main/Lenna.png");
+  cv::Mat rena_img = cv::imread("main/circle_test.png");
   cv::imshow("renna", rena_img);
 
 //  EdgeDrawing ed;
@@ -17,6 +17,9 @@ int main(void)
 
   EDCircle circle_detector;
   circle_detector.detect(edge_segment);
+
+  std::vector<Circle> circle_ret = circle_detector.get_circle();
+  std::vector<Ellipse> ellipse_ret = circle_detector.get_ellipse();
 
   cv::Mat ret_img_segment = cv::Mat::zeros(rena_img.size(), CV_8UC3);
   cv::Mat ret_img_edge = cv::Mat::zeros(rena_img.size(), CV_8UC3);
@@ -29,6 +32,18 @@ int main(void)
     }
   }
 
+  cv::Mat ret_edcircle = cv::Mat::zeros(rena_img.size(), CV_8UC3);
+  for (int i = 0 ; i < circle_ret.size(); i++) {
+    std::cout <<circle_ret[i].center << ", " << circle_ret[i].radius << std::endl;
+    cv::circle(ret_edcircle, circle_ret[i].center, circle_ret[i].radius, cv::Scalar(60,255,60), 1, 8, 0 );
+  }
+
+  for(int i = 0 ; i < ellipse_ret.size(); i++) {
+    std::cout <<ellipse_ret[i].center << ", " << ellipse_ret[i].radius_ls << "," <<  ellipse_ret[i].angle << std::endl;
+    cv::ellipse(ret_edcircle, ellipse_ret[i].center, ellipse_ret[i].radius_ls, ellipse_ret[i].angle, 0, 360, cv::Scalar(122,122,255));
+  }
+
+  cv::imshow("ret_circle", ret_edcircle);
   cv::imshow("ret_img_segment", ret_img_segment);
   cv::imshow("ret_img_edge", ret_img_edge);
   cv::waitKey(0);

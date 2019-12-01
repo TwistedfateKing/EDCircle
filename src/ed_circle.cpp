@@ -14,10 +14,9 @@ void EDCircle::detect(std::vector<std::vector<cv::Point>> edge_segment) {
   std::cout << "EDCircle::detect()" << std::endl;
 
   // 1. Detect edge segments by EDPF and extract complete circles and ellipses.
-//  Least-Squares Circle Fit
-  std::vector<std::vector<cv::Point>> remain_edge_segment = find_least_squares_circle_fit(edge_segment);
-  remain_edge_segment = find_least_squares_ellipse_fit(remain_edge_segment);
-//  Least-Squares Circle Fit
+  std::vector<std::vector<cv::Point>> remain_edge_segment;
+  remain_edge_segment = find_least_squares_circle_fit(edge_segment); //  Least-Squares Circle Fit
+  remain_edge_segment = find_least_squares_ellipse_fit(remain_edge_segment);   //  Least-Squares ellipse Fit
 
   // 2. Convert the remaining edge segments into line segments.
 
@@ -33,47 +32,42 @@ void EDCircle::detect(std::vector<std::vector<cv::Point>> edge_segment) {
 
 }
 std::vector<std::vector<cv::Point>> EDCircle::find_least_squares_circle_fit(std::vector<std::vector<cv::Point> > edge_segment) {
-  std::vector<std::vector<cv::Point> > edge_segment_l;
+  std::vector<std::vector<cv::Point> > edge_segment_remain;
 
-  for(int i = 0; i < edge_segment.size(); i++)
-  {
-    cv::Point2f circle_center;
-    float radius;
-    bool check = least_squares_circle_fit(edge_segment[i], circle_center, radius);
-    if( check == true) {
+  for(int i = 0; i < edge_segment.size(); i++) {
+    Circle circle;
+    bool check = least_squares_circle_fit(edge_segment[i], circle);
+    if( check ) {
       std::cout << " Find Circle " << std::endl;
+      circle_v_.push_back(circle);
     }
     else {
-      edge_segment_l.push_back(edge_segment[i]);
+      edge_segment_remain.push_back(edge_segment[i]);
     }
   }
 
-  return edge_segment_l;
+  return edge_segment_remain;
 }
 
 std::vector<std::vector<cv::Point>> EDCircle::find_least_squares_ellipse_fit(std::vector<std::vector<cv::Point> > edge_segment) {
-  std::vector<std::vector<cv::Point> > edge_segment_l;
+  std::vector<std::vector<cv::Point> > edge_segment_remain;
 
-  for(int i = 0; i < edge_segment.size(); i++)
-  {
-    float a,b,c,d,e,f;
-    a = b = c = d = e = f = 0;
-
-    bool check = least_squares_ellipse_fit(edge_segment[i], a, b, c, d, e, f);
-    if( check == true) {
+  for(int i = 0; i < edge_segment.size(); i++) {
+    Ellipse ellipse;
+    bool check = least_squares_ellipse_fit(edge_segment[i], ellipse);
+    if( check ) {
       std::cout << " Find Ellipse " << std::endl;
+      ellipse_v_.push_back(ellipse);
     }
     else {
-      edge_segment_l.push_back(edge_segment[i]);
+      edge_segment_remain.push_back(edge_segment[i]);
     }
   }
 
-  return edge_segment_l;
+  return edge_segment_remain;
 }
 
-bool EDCircle::least_squares_circle_fit(std::vector<cv::Point> edge_segment,
-                                        cv::Point2f &circle_center,
-                                        float &radius) {
+bool EDCircle::least_squares_circle_fit(std::vector<cv::Point> edge_segment, Circle &circle) {
   int N = edge_segment.size();
   float x_mean = 0;
   float y_mean = 0;
@@ -131,22 +125,20 @@ bool EDCircle::least_squares_circle_fit(std::vector<cv::Point> edge_segment,
   for( int i = 0 ; i < N ; i++){
     float x = edge_segment[i].x;
     float y = edge_segment[i].y;
-    error = sqrt(fabs((x - x_center)*(x - x_center) + (y - y_center)*(y - y_center) - R*R));
+    error = fabs(sqrt((x - x_center)*(x - x_center) + (y - y_center)*(y - y_center) ) - R);
     if( error > 1.5) {
       ret = false;
       break;
     }
   }
 
+  circle.center.x = x_center;
+  circle.center.y = y_center;
+  circle.radius = R;
+
   return ret;
 }
-bool EDCircle::least_squares_ellipse_fit(std::vector<cv::Point> edge_segment,
-                                         float &a,
-                                         float &b,
-                                         float &c,
-                                         float &d,
-                                         float &e,
-                                         float &f) {
+bool EDCircle::least_squares_ellipse_fit(std::vector<cv::Point> edge_segment, Ellipse &ellipse) {
 
   int N = edge_segment.size();
   float mx, my, sx, sy;
@@ -179,7 +171,7 @@ bool EDCircle::least_squares_ellipse_fit(std::vector<cv::Point> edge_segment,
   std::cout << mx << std::endl;
   std::cout << my << std::endl;
 
-  // Make D matrix
+  // Make D1, D2 matrix
   for ( int i = 0; i < N; i++) {
     float x1 = (edge_segment[i].x-mx);
     float y1 = (edge_segment[i].y-my);
@@ -191,21 +183,20 @@ bool EDCircle::least_squares_ellipse_fit(std::vector<cv::Point> edge_segment,
     D2.at<float>(i, 2) = (float)1;
   }
 
-  std::cout << D1 << std::endl;
-  std::cout << D2 << std::endl;
-
+//  std::cout << D1 << std::endl;
+//  std::cout << D2 << std::endl;
   cv::Mat S1 = D1.t() * D1;
-  std::cout << "S1" << S1 << std::endl;
+//  std::cout << "S1" << S1 << std::endl;
   cv::Mat S2 = D1.t() * D2;
-  std::cout << "S2" <<S2 << std::endl;
+//  std::cout << "S2" <<S2 << std::endl;
   cv::Mat S3 = D2.t() * D2;
-  std::cout << "S3" << S3 << std::endl;
+//  std::cout << "S3" << S3 << std::endl;
 
   cv::Mat T = -S3.inv()*S2.t();
-  std::cout << "T" << T << std::endl;
+//  std::cout << "T" << T << std::endl;
 
   cv::Mat M = S1 + S2*T;
-  std::cout << "M" << M << std::endl;
+//  std::cout << "M" << M << std::endl;
   cv::Mat M2 = cv::Mat::zeros(cv::Size(3,3), M.type());
   M2.at<float>(0,0) = M.at<float>(2,0)/2.0f;
   M2.at<float>(0,1) = M.at<float>(2,1)/2.0f;
@@ -216,18 +207,23 @@ bool EDCircle::least_squares_ellipse_fit(std::vector<cv::Point> edge_segment,
   M2.at<float>(2,0) = M.at<float>(0,0)/2.0f;
   M2.at<float>(2,1) = M.at<float>(0,1)/2.0f;
   M2.at<float>(2,2) = M.at<float>(0,2)/2.0f;
-  std::cout << "M2" << M2 << std::endl;
+//  std::cout << "M2" << M2 << std::endl;
 
   cv::Mat eigenvalues(1, 3, M2.type()), eigenvectors(3, 3, M2.type());
   cv::eigenNonSymmetric(M2, eigenvalues, eigenvectors );
 
   eigenvectors = -eigenvectors;
-  std::cout << "eigenvalues" << eigenvalues << std::endl;
-  std::cout << "eigenvectors" << eigenvectors << std::endl;
+//  std::cout << "eigenvalues" << eigenvalues << std::endl;
+//  std::cout << "eigenvectors" << eigenvectors << std::endl;
 
   float check = 4*eigenvectors.at<float>(0,0) *eigenvectors.at<float>(0,2) - eigenvectors.at<float>(0,1)*eigenvectors.at<float>(0,1);
-  if(check < 0)
+  if(check < 0.000001)
     return false;
+
+//  float check = eigenvalues.at<float>(0);
+//  if(check < 0 || check > 99999)
+//    return false;
+
 
   cv::Mat eigenvector_top = cv::Mat::zeros(cv::Size(1,3), eigenvectors.type());
   cv::Mat T_eigenvector_top = cv::Mat::zeros(cv::Size(1,3), eigenvectors.type());
@@ -235,21 +231,80 @@ bool EDCircle::least_squares_ellipse_fit(std::vector<cv::Point> edge_segment,
   eigenvector_top.at<float>(1) = eigenvectors.at<float>(0,1);
   eigenvector_top.at<float>(2) = eigenvectors.at<float>(0,2);
   T_eigenvector_top = T*eigenvector_top;
-  std::cout << "eigenvector_top\n" << eigenvector_top <<  std::endl;
-  std::cout << "T*eigenvector" << T_eigenvector_top <<  std::endl;
+//  std::cout << "eigenvector_top" << eigenvector_top <<  std::endl;
+//  std::cout << "T*eigenvector" << T_eigenvector_top <<  std::endl;
 
 
-  a = eigenvector_top.at<float>(0);
-  b = eigenvector_top.at<float>(1);
-  c = eigenvector_top.at<float>(2);
-  d = T_eigenvector_top.at<float>(0)-2*eigenvector_top.at<float>(0)*mx-eigenvector_top.at<float>(1)*my;
-  e = T_eigenvector_top.at<float>(1)-2*eigenvector_top.at<float>(2)*my-eigenvector_top.at<float>(1)*mx;
-  f  = T_eigenvector_top.at<float>(2) +
+  float a = eigenvector_top.at<float>(0);
+  float b = eigenvector_top.at<float>(1);
+  float c = eigenvector_top.at<float>(2);
+  float d = T_eigenvector_top.at<float>(0)-2*eigenvector_top.at<float>(0)*mx-eigenvector_top.at<float>(1)*my;
+  float e = T_eigenvector_top.at<float>(1)-2*eigenvector_top.at<float>(2)*my-eigenvector_top.at<float>(1)*mx;
+  float f  = T_eigenvector_top.at<float>(2) +
       eigenvector_top.at<float>(0)*mx*mx +
       eigenvector_top.at<float>(2)*my*my +
       eigenvector_top.at<float>(1)*mx*my -
       T_eigenvector_top.at<float>(0)*mx -
       T_eigenvector_top.at<float>(1)*my;
 
-  return true;
+  float norm = sqrt(a*a+b*b+c*c+d*d+e*e+f*f);
+  a /= norm;
+  b /= norm;
+  c /= norm;
+  d /= norm;
+  e /= norm;
+  f /= norm;
+
+  double tmp1 = b*b - 4*a*c;
+  double tmp2 = sqrt((a-c)*(a-c)+b*b);
+  double tmp3 = a*e*e + c*d*d - b*d*e + tmp1*f;
+
+  double r1 = -sqrt(2*tmp3*(a+c+tmp2)) / tmp1;
+  double r2 = -sqrt(2*tmp3*(a+c-tmp2)) / tmp1;
+  float rl = r1>=r2 ? r1 : r2;
+  float rs = r1<=r2 ? r1 : r2;
+
+  float cx = (2*c*d - b*e) / tmp1;
+  float cy = (2*a*e - b*d) / tmp1;
+
+  float phi = 0.5 * atan2(b, a-c);
+  if(r1>r2)
+    phi += M_PI_2;
+
+  // error check
+  float error = 0;
+  bool ret = true;
+  for( int i = 0 ; i < N ; i++){
+    float x = edge_segment[i].x;
+    float y = edge_segment[i].y;
+
+    float e = a*x*x + b*x*y + c*y*y + d*x + e*y + f;
+
+//    error = fabs(e);
+//    if( error > 100) {
+//      ret = false;
+//      break;
+//    }
+  }
+
+  ellipse.A = a;
+  ellipse.B = b;
+  ellipse.C = c;
+  ellipse.D = d;
+  ellipse.E = e;
+  ellipse.F = f;
+
+  ellipse.center.x  = cx;
+  ellipse.center.y  = cy;
+  ellipse.radius_ls.width  = rl;
+  ellipse.radius_ls.height  = rs;
+  ellipse.angle  = phi;
+
+  return ret;
+}
+std::vector<Circle> EDCircle::get_circle() {
+  return circle_v_;
+}
+std::vector<Ellipse> EDCircle::get_ellipse() {
+  return ellipse_v_;
 }
