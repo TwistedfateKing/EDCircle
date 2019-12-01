@@ -20,15 +20,12 @@ struct Line {
 class LineEquation {
  public:
   LineEquation();
-  LineEquation(float A, float B);
   ~LineEquation();
 
+  float ComputePointDistance2Line(cv::Point point);
+
+ public:
   Line lineeq;
-// protected:
-//  Line line_;
-//  float A_, B_;
-//  cv::Point p1_;
-//  cv::Point p2_;
 };
 
 class EDLine {
@@ -42,7 +39,6 @@ class EDLine {
   void LineFit(std::vector<cv::Point> pixelChain);
   void LeastSquaresLineFit(std::vector<cv::Point> pixelChain, int min_line_length, LineEquation &lineEquation, float &lineFitError);
   float ComputeError(LineEquation &lineEquation, std::vector<cv::Point> pixelChain);
-  float ComputePointDistance2Line(LineEquation &lineEquation, cv::Point point);
 
  protected:
   std::vector<Line> ed_lines_;

@@ -4,7 +4,7 @@
 
 #include "ed_line.h"
 EDLine::EDLine() {
-  std::cout << "EDline init" << std::endl;
+
 }
 EDLine::~EDLine() {
 
@@ -16,7 +16,6 @@ std::vector<Line> EDLine::detect(std::vector<std::vector<cv::Point> > edge_segme
   for (int i = 0; i < edge_segment.size(); i++) {
     // fit line
 
-
     // validation
 
   }
@@ -25,7 +24,7 @@ std::vector<Line> EDLine::detect(std::vector<std::vector<cv::Point> > edge_segme
 void EDLine::LineFit(std::vector<cv::Point> pixelChain) {
   int initial_length_of_pixelChain = pixelChain.size();
   float lineFitError = FLT_MAX; // current line fit error
-  LineEquation lineEquation; // y = ax + b OR x = ay + b
+  LineEquation lineEquation;    // y = ax + b OR x = ay + b
 
   std::vector<cv::Point> pixelChain_pop;
 
@@ -50,10 +49,10 @@ void EDLine::LineFit(std::vector<cv::Point> pixelChain) {
     lineLen++;
   } //end-while
   // End of the current line segment. Compute the final line equation & output it.
-  LeastSquaresLineFit(pixelChain, lineLen, &lineEquation);
-  Output ‘‘lineEquation’’
+  LeastSquaresLineFit(pixelChain, lineLen, lineEquation, lineFitError);
+//  Output ‘‘lineEquation’’
   // Extract line segments from the remaining pixels
-  LineFit(pixelChain + lineLen);
+  LineFit(pixelChain);
 } //end-LineFit
 
 void EDLine::LeastSquaresLineFit(std::vector<cv::Point> pixelChain, int min_line_length, LineEquation &lineEquation, float &lineFitError) {
@@ -92,35 +91,27 @@ void EDLine::LeastSquaresLineFit(std::vector<cv::Point> pixelChain, int min_line
 }
 
 float EDLine::ComputeError(LineEquation &lineEquation, std::vector<cv::Point> pixelChain) {
-  float A = lineEquation.lineeq.A;
-  float B = lineEquation.lineeq.B;
   int N = pixelChain.size();
   float accum_error = 0;
   for(int i = 0; i < N; i++) {
-    float x = pixelChain[i].x;
-    float y = pixelChain[i].y;
-    accum_error += fabs( A*x - y + B ) / sqrt(A*A + 1);
+    accum_error += lineEquation.ComputePointDistance2Line(pixelChain[i]);
   }
   return accum_error / (float)N;
 }
 
-float EDLine::ComputePointDistance2Line(LineEquation &lineEquation, cv::Point point) {
-  float A = lineEquation.lineeq.A;
-  float B = lineEquation.lineeq.B;
+LineEquation::LineEquation() {
+
+}
+LineEquation::~LineEquation() {
+
+}
+
+float LineEquation::ComputePointDistance2Line(cv::Point point) {
+  float A = lineeq.A;
+  float B = lineeq.B;
   float error = 0;
   float x = point.x;
   float y = point.y;
   error = fabs( A*x - y + B ) / sqrt(A*A + 1);
   return error;
-}
-
-
-LineEquation::LineEquation() {
-
-}
-LineEquation::LineEquation(float A, float B) {
-
-}
-LineEquation::~LineEquation() {
-
 }
