@@ -10,7 +10,7 @@ EDCircle::EDCircle() {
 EDCircle::~EDCircle() {
 
 }
-void EDCircle::detect(std::vector<std::vector<cv::Point>> edge_segment) {
+void EDCircle::detect(std::vector<std::vector<cv::Point>> edge_segment, cv::Size img_size) {
   std::cout << "EDCircle::detect()" << std::endl;
 
   // 1. Detect edge segments by EDPF and extract complete circles and ellipses.
@@ -19,7 +19,7 @@ void EDCircle::detect(std::vector<std::vector<cv::Point>> edge_segment) {
   remain_edge_segment = find_least_squares_ellipse_fit(remain_edge_segment);   //  Least-Squares ellipse Fit
 
   // 2. Convert the remaining edge segments into line segments.
-
+  std::vector<Line> line_tmp = edline_detector_.detect(remain_edge_segment, img_size);
   // 3. Detect arcs by combining line segments
 
   // 4. Join arcs to detect circle candidates.

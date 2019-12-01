@@ -27,7 +27,7 @@ class EDCircle {
   EDCircle();
   ~EDCircle();
 
-  void detect( std::vector<std::vector<cv::Point> > edge_segment);
+  void detect( std::vector<std::vector<cv::Point> > edge_segment, cv::Size img_size);
   std::vector< Circle > get_circle();
   std::vector< Ellipse > get_ellipse();
 

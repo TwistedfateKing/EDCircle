@@ -19,7 +19,8 @@ int main(void)
   std::vector< std::vector<cv::Point> > edge_segment = edpf.detect(src);
 
   EDCircle circle_detector;
-  circle_detector.detect(edge_segment);
+  circle_detector.detect(edge_segment, src.size());
+
   std::vector<Circle> ret_circle = circle_detector.get_circle();
   std::vector<Ellipse> ret_ellipse = circle_detector.get_ellipse();
 

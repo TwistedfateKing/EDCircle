@@ -19,6 +19,7 @@ std::vector<Line> EDLine::detect(std::vector<std::vector<cv::Point> > edge_segme
     // validation
 
   }
+  return std::vector<Line>();
 }
 
 void EDLine::LineFit(std::vector<cv::Point> pixelChain) {
