@@ -38,6 +38,7 @@ class EDLine {
 
  protected:
   void LineFit(std::vector<cv::Point> pixelChain, int noPixels);
+  void LeastSquaresLineFit(std::vector<cv::Point> pixelChain, int min_line_length, LineEquation &lineEquation, double &lineFitError);
 
  protected:
   std::vector<Line> ed_lines_;

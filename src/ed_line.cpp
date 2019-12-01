@@ -27,7 +27,7 @@ void EDLine::LineFit(std::vector<cv::Point> pixelChain, int noPixels) {
   double lineFitError = INFINITY; // current line fit error
   LineEquation lineEquation; // y = ax + b OR x = ay + b
   while (noPixels > MIN_LINE_LENGTH){
-    LeastSquaresLineFit(pixelChain, MIN_LINE_LENGTH, &lineEquation, &lineFitError);
+    LeastSquaresLineFit(pixelChain, MIN_LINE_LENGTH, lineEquation, lineFitError);
     if (lineFitError <= 1.0) break; // OK. An initial line segment detected
     pixelChain++; // Skip the first pixel & try with the remaining pixels
     noPixels–; // One less pixel
@@ -48,6 +48,11 @@ void EDLine::LineFit(std::vector<cv::Point> pixelChain, int noPixels) {
   // Extract line segments from the remaining pixels
   LineFit(pixelChain + lineLen, noPixels-lineLen);
 } //end-LineFit
+
+void EDLine::LeastSquaresLineFit(std::vector<cv::Point> pixelChain, int min_line_length, LineEquation &lineEquation, double &lineFitError){
+
+}
+
 
 LineEquation::LineEquation() {
 
