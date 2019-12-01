@@ -38,7 +38,6 @@ std::vector<std::vector<cv::Point>> EDCircle::find_least_squares_circle_fit(std:
     Circle circle;
     bool check = least_squares_circle_fit(edge_segment[i], circle);
     if( check ) {
-      std::cout << " Find Circle " << std::endl;
       circle_v_.push_back(circle);
     }
     else {
@@ -56,7 +55,6 @@ std::vector<std::vector<cv::Point>> EDCircle::find_least_squares_ellipse_fit(std
     Ellipse ellipse;
     bool check = least_squares_ellipse_fit(edge_segment[i], ellipse);
     if( check ) {
-      std::cout << " Find Ellipse " << std::endl;
       ellipse_v_.push_back(ellipse);
     }
     else {
@@ -168,8 +166,8 @@ bool EDCircle::least_squares_ellipse_fit(std::vector<cv::Point> edge_segment, El
   }
   mx = mx / (float)N;
   my = my / (float)N;
-  std::cout << mx << std::endl;
-  std::cout << my << std::endl;
+//  std::cout << mx << std::endl;
+//  std::cout << my << std::endl;
 
   // Make D1, D2 matrix
   for ( int i = 0; i < N; i++) {
