@@ -22,8 +22,10 @@ class LineEquation {
   LineEquation();
   LineEquation(float A, float B);
   ~LineEquation();
- protected:
-  Line line_;
+
+  Line lineeq;
+// protected:
+//  Line line_;
 //  float A_, B_;
 //  cv::Point p1_;
 //  cv::Point p2_;
@@ -37,8 +39,10 @@ class EDLine {
   std::vector<Line> detect( std::vector<std::vector<cv::Point> > edge_segment, cv::Size img_size );
 
  protected:
-  void LineFit(std::vector<cv::Point> pixelChain, int noPixels);
-  void LeastSquaresLineFit(std::vector<cv::Point> pixelChain, int min_line_length, LineEquation &lineEquation, double &lineFitError);
+  void LineFit(std::vector<cv::Point> pixelChain);
+  void LeastSquaresLineFit(std::vector<cv::Point> pixelChain, int min_line_length, LineEquation &lineEquation, float &lineFitError);
+  float ComputeError(LineEquation &lineEquation, std::vector<cv::Point> pixelChain);
+  float ComputePointDistance2Line(LineEquation &lineEquation, cv::Point point);
 
  protected:
   std::vector<Line> ed_lines_;
