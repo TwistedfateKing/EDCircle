@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include "opencv2/opencv.hpp"
+#include "ed_line.h"
 
 struct Circle {
   cv::Point2f center;
@@ -38,6 +39,9 @@ class EDCircle {
 
   std::vector< Circle> circle_v_;
   std::vector< Ellipse> ellipse_v_;
+
+ private:
+  EDLine edline_detector_;
 };
 
 #endif //EDCIRCLE_SRC_ED_CIRCLE_H_
