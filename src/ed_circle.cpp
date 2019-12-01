@@ -273,7 +273,7 @@ bool EDCircle::least_squares_ellipse_fit(std::vector<cv::Point> edge_segment, El
 
   // error check
 //  float error = 0;
-//  bool ret = true;
+  bool ret = true;
 //  for( int i = 0 ; i < N ; i++){
 //    float x = edge_segment[i].x;
 //    float y = edge_segment[i].y;

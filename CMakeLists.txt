@@ -23,6 +23,8 @@ target_sources(${TARGET_EDCIRCLE}
         PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src/ed_circle.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/ed_circle.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/ed_line.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/ed_line.h"
         )
 
 add_subdirectory(main)
