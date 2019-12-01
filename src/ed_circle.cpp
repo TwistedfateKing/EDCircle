@@ -272,20 +272,20 @@ bool EDCircle::least_squares_ellipse_fit(std::vector<cv::Point> edge_segment, El
     phi += M_PI_2;
 
   // error check
-  float error = 0;
-  bool ret = true;
-  for( int i = 0 ; i < N ; i++){
-    float x = edge_segment[i].x;
-    float y = edge_segment[i].y;
-
-    float e = a*x*x + b*x*y + c*y*y + d*x + e*y + f;
-
+//  float error = 0;
+//  bool ret = true;
+//  for( int i = 0 ; i < N ; i++){
+//    float x = edge_segment[i].x;
+//    float y = edge_segment[i].y;
+//
+//    float e = a*x*x + b*x*y + c*y*y + d*x + e*y + f;
+//
 //    error = fabs(e);
 //    if( error > 100) {
 //      ret = false;
 //      break;
 //    }
-  }
+//  }
 
   ellipse.A = a;
   ellipse.B = b;
