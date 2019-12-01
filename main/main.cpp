@@ -60,8 +60,8 @@ void DisplayCircleResult( cv::Mat src_img, std::vector<Circle> circles, std::vec
   }
 
   for(int i = 0 ; i < ellipses.size(); i++) {
-    if( image_rect.contains( ellipses[i].center) )
-      cv::ellipse(ret_edcircle, ellipses[i].center, ellipses[i].radius_ls, ellipses[i].angle, 0, 360, cv::Scalar(122,122,255));
+    if( image_rect.contains( ellipses[i].center) && ellipses[i].radius_ls.width > 0 && ellipses[i].radius_ls.height > 0)
+      cv::ellipse(ret_edcircle, ellipses[i].center, ellipses[i].radius_ls, ellipses[i].angle*180./CV_PI, 0, 360, cv::Scalar(122,122,255));
   }
 
   cv::hconcat(src_img, ret_edcircle, ret_edcircle);
