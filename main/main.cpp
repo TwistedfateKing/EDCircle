@@ -29,6 +29,7 @@ int main(void)
 
   cv::waitKey(0);
   cv::waitKey(0);
+  cv::waitKey(0);
 
   return 1;
 }
