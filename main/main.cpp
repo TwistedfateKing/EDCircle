@@ -28,6 +28,7 @@ int main(void)
   DisplayCircleResult(src, ret_circle, ret_ellipse );
 
   cv::waitKey(0);
+  cv::waitKey(0);
 
   return 1;
 }
